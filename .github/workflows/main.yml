@@ -1,9 +1,40 @@
-version: '1.0'
-settings:
-  debug_mode: true
-  database:
-    driver: sqlite3
-    name: data.db
-  server:
-    host: 0.0.0.0
-    port: 8080
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install --upgrade buildozer Cython==0.29.36 virtualenv
+
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v3
+
+    - name: Build with Buildozer
+      uses: ArtemSBulgakov/buildozer-action@v1
+      id: buildozer
+      with:
+        command: buildozer -v android debug
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: package
+        path: bin/*.apk
