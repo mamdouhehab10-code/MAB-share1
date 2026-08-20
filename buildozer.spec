@@ -1,20 +1,22 @@
 [app]
-title = MAB Share
-package.name = mabshare
-package.domain = org.mab
-source.dir = .
-source.include_exts = py,png,jpg,kv,atlas
-version = 1.1
-requirements = python3,kivy,qrcode,pillow,plyer
-orientation = portrait
-fullscreen = 0
-android.permissions = INTERNET,ACCESS_WIFI_STATE,ACCESS_NETWORK_STATE,WRITE_EXTERNAL_STORAGE,READ_EXTERNAL_STORAGE
-android.api = 33
-android.minapi = 21
-android.ndk = 25b
-android.sdk = 30
-android.accept_sdk_license = True
+# (str) Title of your application
+title = My Application
 
-[buildozer]
-log_level = 2
-warn_on_root = 1
+# (str) Package name
+package.name = myapp
+
+# (str) Package domain (needed for android packaging)
+package.domain = org.test
+
+# (list) Source files to include (let it empty to include all the files)
+source.include_exts = py,png,jpg,kv,atlas
+
+# (list) Application requirements
+# تأكد إنك كاتب المكتبات اللي المشروع محتاجها هنا صح زي python3, kivy, sqlite3 وغيرها
+requirements = python3,kivy
+
+# (str) Supported orientations
+orientation = portrait
+
+# (list) Permissions
+android.permissions = INTERNET
