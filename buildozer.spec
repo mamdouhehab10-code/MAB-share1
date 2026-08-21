@@ -1,9 +1,10 @@
 [app]
-title = My Application
-package.name = myapp
-package.domain = org.test
+title = MAB Share - Moved to APK build
+package.name = mabshare
+package.domain = org.mabd
 source.include_exts = py,png,jpg,kv,atlas
-requirements = python3,kivy,pillow,plyer,qrcode
+# Include all Python dependencies used by the app (Flask + werkzeug used by the local server)
+requirements = python3,kivy,pillow,plyer,qrcode,flask,werkzeug,arabic_reshaper,python-bidi
 android.permissions = INTERNET
 android.api = 33
 android.minapi = 21
