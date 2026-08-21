@@ -1,0 +1,10 @@
+kivy==2.3.0
+Flask==3.0.0
+Werkzeug==3.0.1
+Pillow==10.1.0
+qrcode==7.4.2
+python-bidi==0.4.2
+arabic-reshaper==0.4.0
+plyer==2.1.0
+Cython==0.29.36
+pyjnius==1.5.2
