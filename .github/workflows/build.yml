@@ -5,56 +5,31 @@ on:
     branches: [ main ]
 
 jobs:
-  build:
-    runs-on: ubuntu-22.04
+  build_apk:
+    runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Code
-      uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.10'
+      - name: Install Docker (ensures docker is available)
+        run: |
+          sudo apt-get update || true
+          sudo apt-get install -y docker.io || true
 
-    - name: Set up Java
-      uses: actions/setup-java@v4
-      with:
-        distribution: 'temurin'
-        java-version: '17'
+      - name: Build APK with Buildozer (inside kivy/buildozer Docker image)
+        env:
+          P4A_BRANCH: release-2023.06.14
+        run: |
+          docker run --rm -e P4A_BRANCH="$P4A_BRANCH" -v "${{ github.workspace }}":/home/user/hostcwd -w /home/user/hostcwd kivy/buildozer buildozer -v android debug
 
-    - name: Install Dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y \
-            python3-pip \
-            build-extras \
-            git \
-            ffmpeg \
-            libsdl2-dev \
-            libsdl2-image-dev \
-            libsdl2-mixer-dev \
-            libsdl2-ttf-dev \
-            libportmidi-dev \
-            libswscale-dev \
-            libavformat-dev \
-            libavcodec-dev \
-            zlib1g-dev \
-            libffi-dev \
-            libssl-dev
+      - name: List generated files (debug)
+        run: ls -la bin || true
 
-    - name: Install Buildozer and Cython
-      run: |
-        pip install --upgrade pip
-        pip install --upgrade cython==0.29.36
-        pip install --upgrade buildozer
-
-    - name: Build with Buildozer
-      run: |
-        buildozer -v android debug
-
-    - name: Upload APK Artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: app-debug
-        path: bin/*.apk
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: MAB-share-apk
+          path: |
+            bin/*.apk
+            bin/*.aab
