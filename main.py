@@ -1,7 +1,10 @@
 import os
+import sys
+import platform
 import socket
 import threading
 from io import BytesIO
+from pathlib import Path
 
 from flask import (
     Flask,
@@ -46,7 +49,54 @@ from kivy.uix.scrollview import ScrollView
 from kivy.uix.tabbedpanel import TabbedPanel, TabbedPanelItem
 from kivy.uix.popup import Popup
 
-FONT_PATH = "C:/Windows/Fonts/arial.ttf" if os.path.exists("C:/Windows/Fonts/arial.ttf") else "Roboto"
+# =========================================================
+# Cross-platform Font Detection
+# =========================================================
+def get_system_font():
+    """Get system font path that supports Arabic across platforms"""
+    system = platform.system()
+    
+    # Windows font paths
+    if system == "Windows":
+        windows_fonts = [
+            "C:/Windows/Fonts/arial.ttf",
+            "C:/Windows/Fonts/segoeui.ttf",
+            "C:/Windows/Fonts/tahoma.ttf"
+        ]
+        for font_path in windows_fonts:
+            if os.path.exists(font_path):
+                return font_path
+    
+    # Linux font paths
+    elif system == "Linux":
+        linux_fonts = [
+            "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+            "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
+            "/usr/share/fonts/truetype/noto/NotoSans-Regular.ttf",  # Better for Arabic
+        ]
+        for font_path in linux_fonts:
+            if os.path.exists(font_path):
+                return font_path
+    
+    # macOS font paths
+    elif system == "Darwin":
+        macos_fonts = [
+            "/Library/Fonts/Arial.ttf",
+            "/System/Library/Fonts/Helvetica.ttc",
+            "/Library/Fonts/Noto Sans.ttf",
+        ]
+        for font_path in macos_fonts:
+            if os.path.exists(font_path):
+                return font_path
+    
+    # Android (Kivy on mobile) - let Kivy handle it
+    if "ANDROID_APP_PATH" in os.environ or platform.android_api:
+        return "Roboto"
+    
+    # Fallback to Kivy's default
+    return "Roboto"
+
+FONT_PATH = get_system_font()
 
 APP_NAME = "MAB Share - local & Web Transfer"
 PORT = 2010
@@ -57,6 +107,22 @@ RECEIVED_FOLDER = os.path.join(BASE_DIR, "received")
 
 os.makedirs(SENT_FOLDER, exist_ok=True)
 os.makedirs(RECEIVED_FOLDER, exist_ok=True)
+
+# =========================================================
+# Cross-platform Folder Opening
+# =========================================================
+def open_folder_cross_platform(path):
+    """Open folder with cross-platform support"""
+    try:
+        system = platform.system()
+        if system == "Windows":
+            os.startfile(path)
+        elif system == "Darwin":  # macOS
+            os.system(f"open '{path}'")
+        else:  # Linux and others
+            os.system(f"xdg-open '{path}'")
+    except Exception as e:
+        print(f"Error opening folder: {e}")
 
 # =========================================================
 # Flask Server
@@ -102,6 +168,7 @@ h1 { text-align: center; color: #38bdf8; margin-top: 0; }
 .card { background: #334155; padding: 15px; border-radius: 10px; margin-bottom: 15px; }
 input[type=file] { width: 100%; margin: 10px 0; color: #cbd5e1; }
 .btn { display: inline-block; background: #0284c7; color: white; border: none; padding: 10px 15px; border-radius: 8px; cursor: pointer; text-decoration: none; font-weight: bold; width: 100%; text-align: center; }
+.btn:hover { background: #0369a1; }
 .refresh { background: #475569; margin-bottom: 15px; }
 .section-title { color: #38bdf8; border-bottom: 1px solid #334155; padding-bottom: 5px; margin-top: 20px; font-size: 16px; }
 ul { list-style: none; padding: 0; margin: 0; }
@@ -331,10 +398,7 @@ class ResponsiveContent(BoxLayout):
             self.show_msg(ar("خطأ"), str(e))
 
     def open_folder(self, *args):
-        try:
-            os.startfile(BASE_DIR)
-        except Exception:
-            pass
+        open_folder_cross_platform(BASE_DIR)
 
     def refresh(self):
         self.refresh_list(self.sent_list, SENT_FOLDER)
